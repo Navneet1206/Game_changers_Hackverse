@@ -1,3 +1,4 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -6,6 +7,7 @@ import Contact from './pages/Contact';
 import Hospitals from './pages/Hospitals';
 import Login from './pages/Login';
 import MediClaim from './pages/MediClaim';
+import CompanyRegistration from './pages/CompanyRegistration'; 
 import DoctorDashboard from './pages/dashboards/DoctorDashboard';
 import PatientDashboard from './pages/dashboards/PatientDashboard';
 import HospitalDashboard from './pages/dashboards/HospitalDashboard';
@@ -24,6 +26,7 @@ function App() {
           <Route path="/hospitals" element={<Hospitals />} />
           <Route path="/login" element={<Login />} />
           <Route path="/mediclaim" element={<MediClaim />} />
+          <Route path="/register-company" element={<CompanyRegistration />} /> 
           <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
           <Route path="/dashboard/patient" element={<PatientDashboard />} />
           <Route path="/dashboard/hospital" element={<HospitalDashboard />} />

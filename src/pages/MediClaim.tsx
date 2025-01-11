@@ -1,5 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Shield, FileCheck, Building2, Users, CheckCircle2 } from 'lucide-react';
 
 const MediClaim = () => {
@@ -109,13 +109,16 @@ const MediClaim = () => {
               </div>
             </div>
 
+            <Link to="/register-company">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="mt-8 w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors text-lg font-semibold"
             >
               Register Your Company
+        
             </motion.button>
+              </Link> {/* Add the new link */}
           </div>
         </motion.div>
       </div>

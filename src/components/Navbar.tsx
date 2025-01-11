@@ -1,9 +1,32 @@
+// src/components/Navbar.tsx
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Heart } from 'lucide-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation(); // Get the current route location
+
+  // Function to close the mobile menu
+  const closeMobileMenu = () => {
+    setIsOpen(false);
+  };
+
+  // Reusable NavLink component
+  const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => {
+    const isActive = location.pathname === to; // Check if the link is active
+    return (
+      <Link
+        to={to}
+        onClick={closeMobileMenu} // Close the mobile menu when a link is clicked
+        className={`block px-3 py-2 text-gray-600 hover:text-blue-600 ${
+          isActive ? 'text-blue-600 font-medium' : ''
+        }`}
+      >
+        {children}
+      </Link>
+    );
+  };
 
   return (
     <nav className="bg-white shadow-lg fixed w-full z-50">
@@ -18,12 +41,15 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-600 hover:text-blue-600">Home</Link>
-            <Link to="/about" className="text-gray-600 hover:text-blue-600">About</Link>
-            <Link to="/contact" className="text-gray-600 hover:text-blue-600">Contact</Link>
-            <Link to="/hospitals" className="text-gray-600 hover:text-blue-600">Find Hospitals</Link>
-            <Link to="/mediclaim" className="text-gray-600 hover:text-blue-600">MediClaim</Link>
-            <Link to="/login" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            <NavLink to="/">Home</NavLink>
+            <NavLink to="/about">About</NavLink>
+            <NavLink to="/contact">Contact</NavLink>
+            <NavLink to="/hospitals">Find Hospitals</NavLink>
+            <NavLink to="/mediclaim">MediClaim</NavLink>
+            <Link
+              to="/login"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
               Login
             </Link>
           </div>
@@ -44,12 +70,12 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link to="/" className="block px-3 py-2 text-gray-600 hover:text-blue-600">Home</Link>
-            <Link to="/about" className="block px-3 py-2 text-gray-600 hover:text-blue-600">About</Link>
-            <Link to="/contact" className="block px-3 py-2 text-gray-600 hover:text-blue-600">Contact</Link>
-            <Link to="/hospitals" className="block px-3 py-2 text-gray-600 hover:text-blue-600">Find Hospitals</Link>
-            <Link to="/mediclaim" className="block px-3 py-2 text-gray-600 hover:text-blue-600">MediClaim</Link>
-            <Link to="/login" className="block px-3 py-2 text-blue-600 font-medium">Login</Link>
+            <NavLink to="/">Home</NavLink>
+            <NavLink to="/about">About</NavLink>
+            <NavLink to="/contact">Contact</NavLink>
+            <NavLink to="/hospitals">Find Hospitals</NavLink>
+            <NavLink to="/mediclaim">MediClaim</NavLink>
+            <NavLink to="/login">Login</NavLink>
           </div>
         </div>
       )}
