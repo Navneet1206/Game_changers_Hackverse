@@ -1,12 +1,40 @@
-
+import React, { useEffect, useState } from 'react';
 import { Calendar, Users, ClipboardList, Clock, Settings } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+
+interface Appointment {
+  id: string;
+  patient: string;
+  time: string;
+  type: string;
+}
 
 const DoctorDashboard = () => {
-  const appointments = [
-    { id: 1, patient: 'John Doe', time: '09:00 AM', type: 'Check-up' },
-    { id: 2, patient: 'Jane Smith', time: '10:30 AM', type: 'Follow-up' },
-    { id: 3, patient: 'Mike Johnson', time: '02:00 PM', type: 'Consultation' },
-  ];
+  const { user } = useAuth();
+  const [appointments, setAppointments] = useState<Appointment[] | null>(null);
+  const [patientCount, setPatientCount] = useState<number | null>(null);
+  const [pendingReports, setPendingReports] = useState<number | null>(null);
+  const [averageWaitTime, setAverageWaitTime] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/doctor/${user?.id}/dashboard`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        console.log("Dashboard Data:", data);
+        setAppointments(data.appointments);
+        setPatientCount(data.patientCount);
+        setPendingReports(data.pendingReports);
+        setAverageWaitTime(data.averageWaitTime);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+  
+    if (user?.id) fetchData();
+  }, [user]);
+  
 
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
@@ -17,7 +45,10 @@ const DoctorDashboard = () => {
               <Calendar className="h-8 w-8 text-blue-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Today's Appointments</h3>
-                <p className="text-2xl font-semibold">8</p>
+                <p className="text-red-500">
+  {appointments === null ? "Failed to load appointments. Please try again later." : null}
+</p>
+
               </div>
             </div>
           </div>
@@ -27,7 +58,7 @@ const DoctorDashboard = () => {
               <Users className="h-8 w-8 text-green-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Total Patients</h3>
-                <p className="text-2xl font-semibold">1,234</p>
+                <p className="text-2xl font-semibold">{patientCount ?? 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -37,7 +68,7 @@ const DoctorDashboard = () => {
               <ClipboardList className="h-8 w-8 text-purple-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Pending Reports</h3>
-                <p className="text-2xl font-semibold">5</p>
+                <p className="text-2xl font-semibold">{pendingReports ?? 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -47,7 +78,7 @@ const DoctorDashboard = () => {
               <Clock className="h-8 w-8 text-yellow-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Average Wait Time</h3>
-                <p className="text-2xl font-semibold">12 min</p>
+                <p className="text-2xl font-semibold">{averageWaitTime ? `${averageWaitTime} min` : 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -58,18 +89,22 @@ const DoctorDashboard = () => {
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-900">Upcoming Appointments</h2>
               <div className="mt-4 space-y-4">
-                {appointments.map((appointment) => (
-                  <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{appointment.patient}</p>
-                      <p className="text-sm text-gray-500">{appointment.type}</p>
+                {appointments ? (
+                  appointments.map((appointment) => (
+                    <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">{appointment.patient}</p>
+                        <p className="text-sm text-gray-500">{appointment.type}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">{appointment.time}</p>
+                        <button className="mt-1 text-sm text-blue-600 hover:text-blue-500">View Details</button>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">{appointment.time}</p>
-                      <button className="mt-1 text-sm text-blue-600 hover:text-blue-500">View Details</button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p>Loading appointments...</p>
+                )}
               </div>
             </div>
           </div>

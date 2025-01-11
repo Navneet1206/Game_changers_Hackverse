@@ -1,12 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TestTube2, FileText, Clock, Users, Activity, Calendar, Settings, Search } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+
+interface PendingTest {
+  id: string;
+  patient: string;
+  test: string;
+  doctor: string;
+  time: string;
+}
 
 const LabDashboard = () => {
-  const pendingTests = [
-    { id: 1, patient: 'Alice Johnson', test: 'Blood Work', doctor: 'Dr. Wilson', time: '10:00 AM' },
-    { id: 2, patient: 'Bob Smith', test: 'X-Ray', doctor: 'Dr. Brown', time: '11:30 AM' },
-    { id: 3, patient: 'Carol White', test: 'MRI Scan', doctor: 'Dr. Davis', time: '02:00 PM' },
-  ];
+  const { user } = useAuth();
+  const [pendingTests, setPendingTests] = useState<PendingTest[] | null>(null);
+  const [reportsReady, setReportsReady] = useState<number | null>(null);
+  const [averageProcessingTime, setAverageProcessingTime] = useState<number | null>(null);
+  const [todaysPatients, setTodaysPatients] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/lab/${user?.id}/dashboard`);
+        const data = await response.json();
+        setPendingTests(data.pendingTests);
+        setReportsReady(data.reportsReady);
+        setAverageProcessingTime(data.averageProcessingTime);
+        setTodaysPatients(data.todaysPatients);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchData();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
@@ -17,7 +43,7 @@ const LabDashboard = () => {
               <TestTube2 className="h-8 w-8 text-blue-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Pending Tests</h3>
-                <p className="text-2xl font-semibold">12</p>
+                <p className="text-2xl font-semibold">{pendingTests ? pendingTests.length : 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -27,7 +53,7 @@ const LabDashboard = () => {
               <FileText className="h-8 w-8 text-green-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Reports Ready</h3>
-                <p className="text-2xl font-semibold">8</p>
+                <p className="text-2xl font-semibold">{reportsReady ?? 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -37,7 +63,7 @@ const LabDashboard = () => {
               <Clock className="h-8 w-8 text-yellow-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Average Processing Time</h3>
-                <p className="text-2xl font-semibold">45 min</p>
+                <p className="text-2xl font-semibold">{averageProcessingTime ? `${averageProcessingTime} min` : 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -47,7 +73,7 @@ const LabDashboard = () => {
               <Users className="h-8 w-8 text-purple-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Today's Patients</h3>
-                <p className="text-2xl font-semibold">24</p>
+                <p className="text-2xl font-semibold">{todaysPatients ?? 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -58,18 +84,22 @@ const LabDashboard = () => {
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-900">Pending Tests</h2>
               <div className="mt-4 space-y-4">
-                {pendingTests.map((test) => (
-                  <div key={test.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{test.patient}</p>
-                      <p className="text-sm text-gray-500">{test.test} - Referred by {test.doctor}</p>
+                {pendingTests ? (
+                  pendingTests.map((test) => (
+                    <div key={test.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">{test.patient}</p>
+                        <p className="text-sm text-gray-500">{test.test} - Referred by {test.doctor}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">{test.time}</p>
+                        <button className="mt-1 text-sm text-blue-600 hover:text-blue-500">Process Now</button>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">{test.time}</p>
-                      <button className="mt-1 text-sm text-blue-600 hover:text-blue-500">Process Now</button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p>Loading pending tests...</p>
+                )}
               </div>
             </div>
           </div>

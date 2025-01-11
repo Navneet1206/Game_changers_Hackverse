@@ -39,18 +39,25 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-8">
-            <NavLink to="/">Home</NavLink>
+            {/* Conditionally hide the Home link when logged in */}
+            {!user && <NavLink to="/">Home</NavLink>}
             <NavLink to="/about">About</NavLink>
             <NavLink to="/contact">Contact</NavLink>
             <NavLink to="/hospitals">Find Hospitals</NavLink>
             <NavLink to="/mediclaim">MediClaim</NavLink>
             {user ? (
-              <button
-                onClick={signOut}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                Logout
-              </button>
+              <>
+                {/* Add a Dashboard link for logged-in users */}
+                <NavLink to={`/dashboard/${user.userType.toLowerCase()}`}>
+                  Dashboard
+                </NavLink>
+                <button
+                  onClick={signOut}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
               <Link
                 to="/login"
@@ -75,18 +82,25 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <NavLink to="/">Home</NavLink>
+            {/* Conditionally hide the Home link when logged in */}
+            {!user && <NavLink to="/">Home</NavLink>}
             <NavLink to="/about">About</NavLink>
             <NavLink to="/contact">Contact</NavLink>
             <NavLink to="/hospitals">Find Hospitals</NavLink>
             <NavLink to="/mediclaim">MediClaim</NavLink>
             {user ? (
-              <button
-                onClick={signOut}
-                className="w-full text-left px-3 py-2 text-gray-600 hover:text-blue-600"
-              >
-                Logout
-              </button>
+              <>
+                {/* Add a Dashboard link for logged-in users */}
+                <NavLink to={`/dashboard/${user.userType.toLowerCase()}`}>
+                  Dashboard
+                </NavLink>
+                <button
+                  onClick={signOut}
+                  className="w-full text-left px-3 py-2 text-gray-600 hover:text-blue-600"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
               <NavLink to="/login">Login</NavLink>
             )}

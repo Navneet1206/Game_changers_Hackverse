@@ -1,18 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Package, ShoppingCart, TrendingUp, AlertCircle, Search, Truck, FileText, Settings } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+
+interface LowStockItem {
+  id: string;
+  name: string;
+  current: number;
+  minimum: number;
+}
+
+interface RecentOrder {
+  id: string;
+  customer: string;
+  items: number;
+  total: string;
+  status: string;
+}
 
 const StoreDashboard = () => {
-  const lowStockItems = [
-    { id: 1, name: 'Paracetamol 500mg', current: 50, minimum: 100 },
-    { id: 2, name: 'Insulin Syringes', current: 25, minimum: 50 },
-    { id: 3, name: 'Blood Pressure Monitor', current: 5, minimum: 10 },
-  ];
+  const { user } = useAuth();
+  const [totalProducts, setTotalProducts] = useState<number | null>(null);
+  const [todaysOrders, setTodaysOrders] = useState<number | null>(null);
+  const [revenueToday, setRevenueToday] = useState<number | null>(null);
+  const [lowStockItems, setLowStockItems] = useState<LowStockItem[] | null>(null);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[] | null>(null);
 
-  const recentOrders = [
-    { id: 1, customer: 'John Doe', items: 3, total: '$45.99', status: 'Processing' },
-    { id: 2, customer: 'Jane Smith', items: 5, total: '$89.99', status: 'Ready' },
-    { id: 3, customer: 'Mike Johnson', items: 2, total: '$29.99', status: 'Delivered' },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/store/${user?.id}/dashboard`);
+        const data = await response.json();
+        setTotalProducts(data.totalProducts);
+        setTodaysOrders(data.todaysOrders);
+        setRevenueToday(data.revenueToday);
+        setLowStockItems(data.lowStockItems);
+        setRecentOrders(data.recentOrders);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchData();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
@@ -23,7 +52,7 @@ const StoreDashboard = () => {
               <Package className="h-8 w-8 text-blue-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Total Products</h3>
-                <p className="text-2xl font-semibold">1,234</p>
+                <p className="text-2xl font-semibold">{totalProducts ?? 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -33,7 +62,7 @@ const StoreDashboard = () => {
               <ShoppingCart className="h-8 w-8 text-green-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Today's Orders</h3>
-                <p className="text-2xl font-semibold">28</p>
+                <p className="text-2xl font-semibold">{todaysOrders ?? 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -43,7 +72,7 @@ const StoreDashboard = () => {
               <TrendingUp className="h-8 w-8 text-yellow-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Revenue Today</h3>
-                <p className="text-2xl font-semibold">$1,459</p>
+                <p className="text-2xl font-semibold">{revenueToday ? `$${revenueToday}` : 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -53,7 +82,7 @@ const StoreDashboard = () => {
               <AlertCircle className="h-8 w-8 text-red-500" />
               <div className="ml-4">
                 <h3 className="text-gray-500 text-sm">Low Stock Items</h3>
-                <p className="text-2xl font-semibold">12</p>
+                <p className="text-2xl font-semibold">{lowStockItems ? lowStockItems.length : 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -64,18 +93,22 @@ const StoreDashboard = () => {
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-900">Low Stock Alert</h2>
               <div className="mt-4 space-y-4">
-                {lowStockItems.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{item.name}</p>
-                      <p className="text-sm text-gray-500">Current Stock: {item.current}</p>
+                {lowStockItems ? (
+                  lowStockItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">{item.name}</p>
+                        <p className="text-sm text-gray-500">Current Stock: {item.current}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-red-600">Below minimum ({item.minimum})</p>
+                        <button className="mt-1 text-sm text-blue-600 hover:text-blue-500">Order Now</button>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-red-600">Below minimum ({item.minimum})</p>
-                      <button className="mt-1 text-sm text-blue-600 hover:text-blue-500">Order Now</button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p>Loading low stock items...</p>
+                )}
               </div>
             </div>
           </div>
@@ -84,23 +117,27 @@ const StoreDashboard = () => {
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
               <div className="mt-4 space-y-4">
-                {recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{order.customer}</p>
-                      <p className="text-sm text-gray-500">{order.items} items · {order.total}</p>
+                {recentOrders ? (
+                  recentOrders.map((order) => (
+                    <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">{order.customer}</p>
+                        <p className="text-sm text-gray-500">{order.items} items · {order.total}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
+                          order.status === 'Processing' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
-                        order.status === 'Processing' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-blue-100 text-blue-700'
-                      }`}>
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p>Loading recent orders...</p>
+                )}
               </div>
             </div>
           </div>
