@@ -14,6 +14,7 @@
   "dependencies": {
     "@react-three/drei": "^9.99.0",
     "@react-three/fiber": "^8.15.16",
+    "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -29,6 +30,7 @@
     "three": "^0.161.0"
   },
   "devDependencies": {
+    "@types/axios": "^0.9.36",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "@types/three": "^0.161.2",

@@ -1,23 +1,46 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Shield, FileCheck, Building2, Users, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
 
 const MediClaim = () => {
+  const [showForm, setShowForm] = useState(false);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
+      transition: { staggerChildren: 0.2 }
     }
   };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1
+    visible: { y: 0, opacity: 1 }
+  };
+
+  const formVariants = {
+    hidden: { scale: 0.9, opacity: 0 },
+    visible: { scale: 1, opacity: 1, transition: { duration: 0.3 } }
+  };
+
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const receiptData = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/submit-claim', receiptData, {
+        responseType: 'blob'
+      });
+      const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = 'MediClaim_Receipt.pdf';
+      link.click();
+    } catch (error) {
+      console.error('Error submitting form:', error);
     }
   };
 
@@ -39,88 +62,97 @@ const MediClaim = () => {
           animate="visible"
           className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3"
         >
-          <motion.div
-            variants={itemVariants}
-            className="bg-white p-6 rounded-xl shadow-md"
-          >
-            <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full">
-              <Shield className="h-6 w-6 text-blue-600" />
-            </div>
-            <h3 className="mt-4 text-xl font-semibold">Verified Authentication</h3>
-            <p className="mt-2 text-gray-600">
-              Our platform uses advanced verification processes to ensure all medical claims are authentic and accurate.
-            </p>
-          </motion.div>
-
-          <motion.div
-            variants={itemVariants}
-            className="bg-white p-6 rounded-xl shadow-md"
-          >
-            <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full">
-              <FileCheck className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="mt-4 text-xl font-semibold">Digital Documentation</h3>
-            <p className="mt-2 text-gray-600">
-              Secure digital storage of all claim-related documents with easy access for authorized personnel.
-            </p>
-          </motion.div>
-
-          <motion.div
-            variants={itemVariants}
-            className="bg-white p-6 rounded-xl shadow-md"
-          >
-            <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full">
-              <Building2 className="h-6 w-6 text-purple-600" />
-            </div>
-            <h3 className="mt-4 text-xl font-semibold">Corporate Integration</h3>
-            <p className="mt-2 text-gray-600">
-              Seamless integration with corporate healthcare policies and insurance providers.
-            </p>
-          </motion.div>
+          {[{
+            Icon: Shield,
+            title: 'Verified Authentication',
+            description: 'Advanced verification for authentic medical claims.'
+          }, {
+            Icon: FileCheck,
+            title: 'Digital Documentation',
+            description: 'Secure storage and easy document access.'
+          }, {
+            Icon: Building2,
+            title: 'Corporate Integration',
+            description: 'Seamless insurance and policy integration.'
+          }].map(({ Icon, title, description }, index) => (
+            <motion.div key={index} variants={itemVariants} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition">
+              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full">
+                <Icon className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="mt-4 text-xl font-semibold">{title}</h3>
+              <p className="mt-2 text-gray-600">{description}</p>
+            </motion.div>
+          ))}
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-16 bg-white rounded-xl shadow-lg overflow-hidden"
+        <motion.button
+          onClick={() => setShowForm(!showForm)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="mt-8 w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors text-lg font-semibold"
         >
-          <div className="p-8">
-            <div className="flex items-center space-x-2">
-              <Users className="h-6 w-6 text-blue-600" />
-              <h2 className="text-2xl font-bold">For Employers</h2>
-            </div>
-            <div className="mt-6 space-y-4">
-              <div className="flex items-start space-x-3">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-                <p className="text-gray-600">Automated verification process for employee medical claims</p>
-              </div>
-              <div className="flex items-start space-x-3">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-                <p className="text-gray-600">Real-time tracking of claim status and processing</p>
-              </div>
-              <div className="flex items-start space-x-3">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-                <p className="text-gray-600">Secure access to employee medical records with proper authorization</p>
-              </div>
-              <div className="flex items-start space-x-3">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-                <p className="text-gray-600">Integration with existing HR and payroll systems</p>
-              </div>
-            </div>
+          {showForm ? 'Close Form' : 'Submit a Medical Claim'}
+        </motion.button>
 
-            <Link to="/register-company">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="mt-8 w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors text-lg font-semibold"
+        <AnimatePresence>
+          {showForm && (
+            <motion.div
+              variants={formVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="mt-8 bg-white p-8 rounded-lg shadow-lg"
             >
-              Register Your Company
-        
-            </motion.button>
-              </Link> {/* Add the new link */}
-          </div>
-        </motion.div>
+              <form onSubmit={handleFormSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-lg font-medium text-gray-700">Full Name</label>
+                  <input type="text" name="fullName" required className="mt-2 p-3 w-full border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700">Employee ID</label>
+                  <input type="text" name="employeeId" required className="mt-2 p-3 w-full border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700">Company</label>
+                  <select name="company" required className="mt-2 p-3 w-full border rounded-lg">
+                    <option value="Tata Consultancy Services">Tata Consultancy Services</option>
+                    <option value="Infosys">Infosys</option>
+                    <option value="Wipro">Wipro</option>
+                    <option value="HCL Technologies">HCL Technologies</option>
+                    <option value="Tech Mahindra">Tech Mahindra</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700">HealthHub Verified Document</label>
+                  <input type="file" name="healthHubDocument" required className="mt-2 p-3 w-full border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700">Doctor's Cost Receipt</label>
+                  <input type="file" name="doctorReceipt" required className="mt-2 p-3 w-full border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700">Email Address</label>
+                  <input type="email" name="email" required className="mt-2 p-3 w-full border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700">Phone Number</label>
+                  <input type="tel" name="phoneNumber" required className="mt-2 p-3 w-full border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700">Describe your health problem</label>
+                  <textarea name="description" required className="mt-2 p-3 w-full border rounded-lg"></textarea>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="mt-4 w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition"
+                >
+                  Submit Claim
+                </motion.button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
