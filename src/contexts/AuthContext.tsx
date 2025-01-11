@@ -12,7 +12,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: any) => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,20 +21,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Check if the user is already logged in (on page refresh)
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Verify token and fetch user data
+      // Fetch user data using the token
       fetch('http://localhost:3000/api/protected', {
         headers: {
-          'Authorization': token,
+          Authorization: token,
         },
       })
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           if (data.userId) {
             setUser(data.user);
           }
+        })
+        .catch((error) => {
+          console.error('Error fetching user data:', error);
         });
     }
   }, []);
@@ -56,8 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
-      
-      setUser(data.user);
+
+      // Automatically log in the user after signup
+      await signIn(email, password);
+    } catch (error) {
+      console.error('Error during signup:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -79,31 +87,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
-      
+
+      // Store the token in local storage
       localStorage.setItem('token', data.token);
       setUser(data.user);
+    } catch (error) {
+      console.error('Error during login:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const signOut = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('http://localhost:3000/api/auth/logout', {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message);
-      }
-
-      localStorage.removeItem('token');
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+  const signOut = () => {
+    localStorage.removeItem('token');
+    setUser(null);
   };
 
   return (

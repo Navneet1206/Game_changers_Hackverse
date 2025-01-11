@@ -8,14 +8,14 @@ const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 3000;
-const SECRET_KEY = 'your-secret-key';
+const SECRET_KEY = 'HelloHelloHello';
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost:27017/healthhub', {
+mongoose.connect('mongodb+srv://Navneet:Navneet12@cluster0.gjlty.mongodb.net/HealthVault?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
