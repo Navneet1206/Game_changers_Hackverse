@@ -1,0 +1,105 @@
+/* Add this to your existing style.css */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    min-height: 100vh;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-header {
+    background: rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.list-group-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+    border-radius: 10px;
+    transition: transform 0.2s ease;
+}
+
+.list-group-item:hover {
+    transform: scale(1.02);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animated {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 20px;
+    }
+}
+
+
+
+
+
+.main_card{
+    background-image: url('https://t3.ftcdn.net/jpg/01/27/70/04/360_F_127700403_dDOFBhESmPnqWeY8K9sWKqL0aGTWgNYA.jpg');
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Center the background image */
+    background-size: cover;
+    
+}
+
+
+.small-description {
+    font-size: 0.9rem;
+    color: #192022;
+}
+
+.full-description {
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.full-description h6 {
+    margin-top: 15px;
+    font-size: 1rem;
+    color: #55166c;
+}
+
+.full-description ul {
+    padding-left: 20px;
+    margin-bottom: 0;
+}
+
+.btn{
+    margin: 20px;
+    padding: 10px;
+    background-color: wheat;
+    color: teal;
+    font-weight: 700;
+}
+
+.btn:hover{
+    background-color: rgb(223, 166, 51);
+    color: azure;
+}
+
+._exercise_cards{
+    cursor: pointer;
+}
+.card-body h5 {
+    color: rgb(22, 77, 179);
+    font-weight: 600;
+    text-decoration: underline;
+}
