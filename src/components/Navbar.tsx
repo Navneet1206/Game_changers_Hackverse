@@ -1,24 +1,23 @@
-// src/components/Navbar.tsx
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Heart } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation(); // Get the current route location
+  const location = useLocation();
+  const { user, signOut } = useAuth();
 
-  // Function to close the mobile menu
   const closeMobileMenu = () => {
     setIsOpen(false);
   };
 
-  // Reusable NavLink component
   const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => {
-    const isActive = location.pathname === to; // Check if the link is active
+    const isActive = location.pathname === to;
     return (
       <Link
         to={to}
-        onClick={closeMobileMenu} // Close the mobile menu when a link is clicked
+        onClick={closeMobileMenu}
         className={`block px-3 py-2 text-gray-600 hover:text-blue-600 ${
           isActive ? 'text-blue-600 font-medium' : ''
         }`}
@@ -39,22 +38,29 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/about">About</NavLink>
             <NavLink to="/contact">Contact</NavLink>
             <NavLink to="/hospitals">Find Hospitals</NavLink>
             <NavLink to="/mediclaim">MediClaim</NavLink>
-            <Link
-              to="/login"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              Login
-            </Link>
+            {user ? (
+              <button
+                onClick={signOut}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Login
+              </Link>
+            )}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -66,7 +72,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
@@ -75,7 +80,16 @@ const Navbar = () => {
             <NavLink to="/contact">Contact</NavLink>
             <NavLink to="/hospitals">Find Hospitals</NavLink>
             <NavLink to="/mediclaim">MediClaim</NavLink>
-            <NavLink to="/login">Login</NavLink>
+            {user ? (
+              <button
+                onClick={signOut}
+                className="w-full text-left px-3 py-2 text-gray-600 hover:text-blue-600"
+              >
+                Logout
+              </button>
+            ) : (
+              <NavLink to="/login">Login</NavLink>
+            )}
           </div>
         </div>
       )}

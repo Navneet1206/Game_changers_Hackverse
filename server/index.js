@@ -3,9 +3,12 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 3000;
+const SECRET_KEY = 'your-secret-key';
 
 // Middleware
 app.use(cors());
@@ -56,6 +59,19 @@ const User = mongoose.model('User', userSchema);
 const Appointment = mongoose.model('Appointment', appointmentSchema);
 const Contact = mongoose.model('Contact', contactSchema);
 
+// Middleware to verify JWT
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(403).json({ message: 'No token provided.' });
+
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err) return res.status(401).json({ message: 'Failed to authenticate token.' });
+
+    req.userId = decoded.id;
+    next();
+  });
+};
+
 // Routes
 
 // Signup
@@ -68,9 +84,10 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       email,
-      password, // In a real-world scenario, hash the password before saving
+      password: hashedPassword,
       fullName,
       userType,
       companyName,
@@ -94,18 +111,34 @@ app.post('/api/auth/login', async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user || user.password !== password) {
+    if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    res.status(200).json({ message: 'Login successful', user });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: '1h' });
+    res.status(200).json({ message: 'Login successful', token, user });
   } catch (error) {
     res.status(500).json({ message: 'Error logging in', error });
   }
 });
 
+// Logout
+app.post('/api/auth/logout', (req, res) => {
+  res.status(200).json({ message: 'Logout successful' });
+});
+
+// Protected route example
+app.get('/api/protected', verifyToken, (req, res) => {
+  res.status(200).json({ message: 'This is a protected route', userId: req.userId });
+});
+
 // Book Appointment
-app.post('/api/appointments/book', async (req, res) => {
+app.post('/api/appointments/book', verifyToken, async (req, res) => {
   const { patientEmail, doctorEmail, date, time } = req.body;
 
   try {
@@ -137,7 +170,7 @@ app.post('/api/appointments/book', async (req, res) => {
 });
 
 // Register Company
-app.post('/api/company/register', async (req, res) => {
+app.post('/api/company/register', verifyToken, async (req, res) => {
   const { email, password, fullName, companyName, contactPerson, address, phone } = req.body;
 
   try {
@@ -146,9 +179,10 @@ app.post('/api/company/register', async (req, res) => {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       email,
-      password, // In a real-world scenario, hash the password before saving
+      password: hashedPassword,
       fullName,
       userType: 'company',
       companyName,

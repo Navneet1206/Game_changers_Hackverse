@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
   id: string;
@@ -21,6 +21,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Verify token and fetch user data
+      fetch('http://localhost:3000/api/protected', {
+        headers: {
+          'Authorization': token,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.userId) {
+            setUser(data.user);
+          }
+        });
+    }
+  }, []);
+
   const signUp = async (email: string, password: string, userData: any) => {
     try {
       setLoading(true);
@@ -29,7 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           email,
           password,
@@ -54,7 +71,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           email,
           password,
@@ -64,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
       
+      localStorage.setItem('token', data.token);
       setUser(data.user);
     } finally {
       setLoading(false);
@@ -75,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       const response = await fetch('http://localhost:3000/api/auth/logout', {
         method: 'POST',
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -83,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.message);
       }
 
+      localStorage.removeItem('token');
       setUser(null);
     } finally {
       setLoading(false);
