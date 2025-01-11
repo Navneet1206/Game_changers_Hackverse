@@ -30,55 +30,76 @@ const Login = () => {
     address: '',
   });
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [popup, setPopup] = useState<{ message: string; isVisible: boolean }>({
+    message: '',
+    isVisible: false,
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-  
+    setIsLoading(true);
+
     // Validate user type for signup
     if (!isLogin && !selectedType) {
       setError('Please select a user type.');
+      setIsLoading(false);
       return;
     }
-  
+
     try {
       const url = isLogin
         ? 'http://localhost:3000/api/auth/login'
         : 'http://localhost:3000/api/auth/register';
-  
-      // Remove empty fields from the payload
-      const payload = {
-        fullName: formData.name,
-        email: formData.email,
-        password: formData.password,
-        userType: selectedType,
-        ...(formData.specialization && { specialization: formData.specialization }),
-        ...(formData.license && { license: formData.license }),
-        ...(formData.address && { address: formData.address }),
-      };
-  
+
+      // Prepare the payload based on whether it's a login or registration
+      const payload = isLogin
+        ? {
+            email: formData.email,
+            password: formData.password,
+          }
+        : {
+            fullName: formData.name,
+            email: formData.email,
+            password: formData.password,
+            userType: selectedType,
+            ...(formData.specialization && { specialization: formData.specialization }),
+            ...(formData.license && { license: formData.license }),
+            ...(formData.address && { address: formData.address }),
+          };
+
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-  
+
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
-  
-      // Navigate to the appropriate dashboard
-      const userType = userTypes.find((type) => type.id === data.user?.userType || selectedType);
-      if (userType) {
-        navigate(userType.dashboard);
-      } else {
-        navigate('/dashboard/patient');
-      }
+
+      // Show success popup
+      setPopup({ message: isLogin ? 'Login successful!' : 'Registration successful!', isVisible: true });
+
+      // Navigate to the appropriate dashboard after a short delay
+      setTimeout(() => {
+        const userType = userTypes.find((type) => type.id === data.user?.userType || selectedType);
+        if (userType) {
+          navigate(userType.dashboard);
+        } else {
+          navigate('/dashboard/patient');
+        }
+      }, 2000);
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setPopup({ message: err.message || 'An unexpected error occurred.', isVisible: true });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  
+
+  const closePopup = () => {
+    setPopup({ message: '', isVisible: false });
+  };
 
   return (
     <div className="pt-20 min-h-screen bg-gray-50 flex items-center justify-center">
@@ -233,9 +254,19 @@ const Login = () => {
             <div>
               <button
                 type="submit"
+                disabled={isLoading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                {isLogin ? 'Sign in' : 'Sign up'}
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    {isLogin ? 'Signing in...' : 'Signing up...'}
+                  </div>
+                ) : isLogin ? (
+                  'Sign in'
+                ) : (
+                  'Sign up'
+                )}
               </button>
             </div>
           </form>
@@ -266,6 +297,20 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      {popup.isVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <p className="text-lg mb-4">{popup.message}</p>
+            <button
+              onClick={closePopup}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
