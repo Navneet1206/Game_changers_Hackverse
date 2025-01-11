@@ -34,6 +34,18 @@ function Home() {
                     </a>
                   </div>
                 </div>
+
+                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center">
+                  <div className="mt-3 sm:mt-0 sm:ml-3">
+                    <a
+                      href="http://127.0.0.1:5000/"
+                      className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-green-500 to-teal-600 hover:from-teal-600 hover:to-green-700 transform transition-all duration-300 ease-in-out hover:scale-105 md:py-4 md:text-lg md:px-10"
+                      target='_blank'
+                    >
+                      Exercise Monitor
+                    </a>
+                  </div>
+                </div>
               </div>
             </main>
           </div>
