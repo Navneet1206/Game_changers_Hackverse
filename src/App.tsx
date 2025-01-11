@@ -25,7 +25,6 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   return user ? children : <Navigate to="/login" />;
 }
 
-
 function App() {
   const { user } = useAuth();
 
@@ -35,7 +34,19 @@ function App() {
         <Navbar />
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Home />} />
+          <Route
+            path="/"
+            element={
+              user ? (
+                <Navigate
+                  to={`/dashboard/${user.userType.toLowerCase()}`}
+                  replace
+                />
+              ) : (
+                <Home />
+              )
+            }
+          />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
