@@ -38,20 +38,53 @@ const Login = () => {
     isVisible: false,
   });
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null); // Clear previous errors
+    setError(null);
     setIsLoading(true);
     try {
-      await signIn(formData.email, formData.password); // Use the AuthContext signIn function
-      navigate('/dashboard/patient'); // Redirect to the patient dashboard (customize per userType)
+      await signIn(formData.email, formData.password);
+      navigate('/dashboard/patient');
     } catch (err: any) {
       setError(err.message || 'An error occurred.');
     } finally {
       setIsLoading(false);
     }
   };
-  
+
+  const handleSignup = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.name,
+          email: formData.email,
+          password: formData.password,
+          userType: selectedType,
+          specialization: formData.specialization,
+          license: formData.license,
+          address: formData.address,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Signup failed.');
+      }
+
+      setPopup({ message: 'User registered successfully', isVisible: true });
+      setIsLogin(true); // Switch to login form after successful signup
+    } catch (err: any) {
+      setError(err.message || 'An error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const closePopup = () => {
     setPopup({ message: '', isVisible: false });
@@ -73,7 +106,7 @@ const Login = () => {
             </div>
           )}
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-8 space-y-6" onSubmit={isLogin ? handleLogin : handleSignup}>
             {!isLogin && (
               <>
                 <div className="grid grid-cols-2 gap-4">

@@ -1,4 +1,3 @@
-import React from 'react';
 import Hero3D from '../components/Hero3D';
 import Features from '../components/Features';
 

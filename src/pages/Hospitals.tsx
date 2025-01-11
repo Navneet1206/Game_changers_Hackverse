@@ -21,41 +21,66 @@ interface Hospital {
 const mockHospitals: Hospital[] = [
   {
     id: 1,
-    name: "City General Hospital",
-    address: "456 Healthcare Ave, Medical District",
-    coordinates: { lat: 40.7128, lng: -74.0060 }, // NYC coordinates
-    rating: 4.5,
-    phone: "+1 (555) 234-5678",
+    name: "Apollo Hospitals",
+    address: "21 Greams Lane, Off Greams Road, Chennai, Tamil Nadu",
+    coordinates: { lat: 13.067439, lng: 80.237617 },
+    rating: 4.7,
+    phone: "+91 44 2829 3333",
     hours: "24/7",
-    specialties: ["Emergency Care", "Surgery", "Pediatrics"],
-    screeningServices: ["X-Ray", "MRI", "Blood Tests", "CT Scan"],
-    image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    specialties: ["Cardiology", "Orthopedics", "Neurology", "Oncology"],
+    screeningServices: ["CT Scan", "MRI", "Blood Tests", "ECG"],
+    image: "https://images.unsplash.com/photo-1584438784665-dfdb2c3f8bb3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 2,
-    name: "Memorial Medical Center",
-    address: "789 Wellness Blvd, Health Valley",
-    coordinates: { lat: 34.0522, lng: -118.2437 }, // LA coordinates
+    name: "AIIMS Delhi",
+    address: "Ansari Nagar, New Delhi, Delhi 110029",
+    coordinates: { lat: 28.5665, lng: 77.210 },
     rating: 4.8,
-    phone: "+1 (555) 345-6789",
+    phone: "+91 11 2658 8500",
     hours: "24/7",
-    specialties: ["Cardiology", "Oncology", "Neurology"],
-    screeningServices: ["Mammography", "Ultrasound", "ECG", "Bone Density"],
-    image: "https://images.unsplash.com/photo-1519494080410-f9aa76cb4283?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    specialties: ["General Medicine", "Surgery", "Pediatrics", "Trauma Care"],
+    screeningServices: ["X-Ray", "Ultrasound", "Blood Tests", "Physical Exam"],
+    image: "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 3,
-    name: "Community Health Center",
-    address: "321 Care Lane, Healing District",
-    coordinates: { lat: 41.8781, lng: -87.6298 }, // Chicago coordinates
-    rating: 4.3,
-    phone: "+1 (555) 456-7890",
-    hours: "8:00 AM - 8:00 PM",
-    specialties: ["Family Medicine", "Dental Care", "Mental Health"],
-    screeningServices: ["Dental X-Ray", "Vision Test", "Mental Health Screening", "Physical Exam"],
-    image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    name: "Fortis Hospital",
+    address: "Sector B, Pocket 1, Aruna Asaf Ali Marg, Vasant Kunj, New Delhi, Delhi 110070",
+    coordinates: { lat: 28.5245, lng: 77.1855 },
+    rating: 4.6,
+    phone: "+91 11 4277 6222",
+    hours: "24/7",
+    specialties: ["Cardiology", "Urology", "Neurology", "Orthopedics"],
+    screeningServices: ["Bone Density Test", "Mammography", "ECG", "Blood Tests"],
+    image: "https://images.unsplash.com/photo-1576765607927-917f30c0a365?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 4,
+    name: "Narayana Health",
+    address: "No. 258/A, Bommasandra Industrial Area, Bengaluru, Karnataka 560099",
+    coordinates: { lat: 12.8342, lng: 77.6833 },
+    rating: 4.5,
+    phone: "+91 80 7122 2222",
+    hours: "24/7",
+    specialties: ["Cancer Care", "Cardiac Surgery", "Pediatrics", "Gastroenterology"],
+    screeningServices: ["Endoscopy", "PET Scan", "CT Scan", "MRI"],
+    image: "https://images.unsplash.com/photo-1576766562930-1168c11a3116?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 5,
+    name: "Manipal Hospitals",
+    address: "98, HAL Airport Road, Bengaluru, Karnataka 560017",
+    coordinates: { lat: 12.9603, lng: 77.6486 },
+    rating: 4.4,
+    phone: "+91 80 2222 1111",
+    hours: "24/7",
+    specialties: ["Nephrology", "Gynecology", "Oncology", "Dermatology"],
+    screeningServices: ["Skin Biopsy", "Blood Tests", "CT Scan", "Physical Exam"],
+    image: "https://images.unsplash.com/photo-1576765607927-917f30c0a365?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   }
 ];
+
 
 const Hospitals = () => {
   const [searchTerm, setSearchTerm] = useState('');
