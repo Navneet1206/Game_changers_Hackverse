@@ -12,6 +12,7 @@ import PatientDashboard from './pages/dashboards/PatientDashboard';
 import HospitalDashboard from './pages/dashboards/HospitalDashboard';
 import LabDashboard from './pages/dashboards/LabDashboard';
 import StoreDashboard from './pages/dashboards/StoreDashboard';
+import NotFound from './pages/NotFound'; // Import a new NotFound component
 import { useAuth } from './contexts/AuthContext';
 
 // Protected Route Component
@@ -118,6 +119,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Catch-All Route for 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>
