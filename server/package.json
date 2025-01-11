@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "server": "nodemon --experimental-specifier-resolution=node index.js"
+    "server": "nodemon index.js"
   },
   "keywords": [],
   "author": "",

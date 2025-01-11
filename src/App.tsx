@@ -16,9 +16,15 @@ import { useAuth } from './contexts/AuthContext';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // Ensure no premature access to `user`
+  }
+
   return user ? children : <Navigate to="/login" />;
 }
+
 
 function App() {
   const { user } = useAuth();
@@ -31,29 +37,36 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-          <Route path="/about" element={
-            <About />
-            } />
-          <Route path="/contact" element={
-            <Contact />
-          } />
-          <Route path="/hospitals" element={
-            <ProtectedRoute>
-            <Hospitals />
-            </ProtectedRoute>
-            } />
-          <Route path="/mediclaim" element={
-            <ProtectedRoute>
-            <MediClaim />
-            </ProtectedRoute>
-            } />
-          <Route path="/register-company" element={
-            <ProtectedRoute>
-            <CompanyRegistration />
-            </ProtectedRoute>
-            } />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
 
-          {/* Protected Routes */}
+          {/* Semi-Protected Routes */}
+          <Route
+            path="/hospitals"
+            element={
+              <ProtectedRoute>
+                <Hospitals />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mediclaim"
+            element={
+              <ProtectedRoute>
+                <MediClaim />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/register-company"
+            element={
+              <ProtectedRoute>
+                <CompanyRegistration />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fully Protected Routes */}
           <Route
             path="/dashboard/doctor"
             element={

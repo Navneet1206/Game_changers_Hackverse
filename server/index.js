@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
   companyName: { type: String },
   contactPerson: { type: String },
   address: { type: String },
-  phone: { type: String },
+  phone: { type: String }, 
   specialization: { type: String },
   license: { type: String },
 });
@@ -52,12 +52,12 @@ const Appointment = mongoose.model('Appointment', appointmentSchema);
 
 // Middleware to Verify JWT
 const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization;
-  if (!token) return res.status(403).json({ message: 'No token provided.' });
+  const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+  if (!token) return res.status(403).json({ message: 'No token provided' });
 
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
-    if (err) return res.status(401).json({ message: 'Failed to authenticate token.' });
-    req.userId = decoded.id;
+    if (err) return res.status(401).json({ message: 'Token invalid or expired' });
+    req.userId = decoded.id; // Set userId for subsequent handlers
     next();
   });
 };
@@ -77,16 +77,15 @@ const signupSchema = Joi.object({
   address: Joi.string().allow('').optional(),
 });
 
-
-
 const signinSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
 });
 
 // Routes
+// Register Route
 app.post('/api/auth/register', async (req, res) => {
-  console.log(req.body); // Log request body to verify received data
+  console.log('Register Request Body:', req.body); // Debugging Log
   const { error } = signupSchema.validate(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
 
@@ -99,39 +98,72 @@ app.post('/api/auth/register', async (req, res) => {
     await newUser.save();
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error registering user', error });
+    console.error('Error Registering User:', error);
+    res.status(500).json({ message: 'Error registering user', error: error.message });
   }
 });
 
-
+// Login Route
 app.post('/api/auth/login', async (req, res) => {
+  console.log('Login Request Body:', req.body); // Debugging log
+
   const { error } = signinSchema.validate(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
+  if (error) {
+    console.error('Validation Error:', error.details[0].message);
+    return res.status(400).json({ message: error.details[0].message });
+  }
 
   const { email, password } = req.body;
   try {
+    // Log when the email search starts
+    console.log('Searching for user with email:', email);
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!user) {
+      console.error('User Not Found');
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Log when the password comparison starts
+    console.log('Comparing password for user:', user.email);
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!isPasswordValid) {
+      console.error('Invalid Password');
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Log when JWT is generated
+    console.log('Generating JWT for user:', user.email);
 
     const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: '1h' });
-    res.status(200).json({ message: 'Login successful', token, user });
-  } catch (error) {
-    res.status(500).json({ message: 'Error logging in', error });
+    res.status(200).json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        userType: user.userType,
+      },
+    });
+
+    console.log('Login Successful for user:', user.email);
+  } catch (err) {
+    console.error('Error Logging In:', err);
+    res.status(500).json({ message: 'Error logging in', error: err.message });
   }
 });
 
-app.post('/api/appointments/book', verifyToken, async (req, res) => {
-  const { patientEmail, doctorEmail, date, time } = req.body;
+// JWT Validation Route
+app.get('/api/auth/validate', verifyToken, async (req, res) => {
   try {
-    const appointmentId = uuidv4();
-    const newAppointment = new Appointment({ appointmentId, patientEmail, doctorEmail, date, time });
-    await newAppointment.save();
-    res.status(201).json({ message: 'Appointment booked successfully', receipt: { appointmentId, date, time } });
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ user });
   } catch (error) {
-    res.status(500).json({ message: 'Error booking appointment', error });
+    console.error('Error Validating Token:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
 

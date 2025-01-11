@@ -21,55 +21,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AuthProvider initialized');
     const token = localStorage.getItem('token');
+    console.log('Token:', token);
     if (token) {
-      fetch('http://localhost:3000/api/protected', {
+      fetch('http://localhost:3000/api/auth/validate', {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => {
-          if (res.ok) return res.json();
-          throw new Error('Token invalid or expired.');
+          console.log('Validate Response:', res);
+          return res.ok ? res.json() : Promise.reject('Token invalid or expired.');
         })
-        .then((data) => setUser(data.user))
-        .catch(() => localStorage.removeItem('token'))
+        .then((data) => {
+          console.log('User Data:', data);
+          setUser(data.user);
+        })
+        .catch((err) => {
+          console.error('Validation Error:', err);
+          localStorage.removeItem('token');
+        })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
   }, []);
-
-  const validateSignInForm = (email: string, password: string) => {
-    if (!email || !password) {
-      throw new Error('Email and password are required.');
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      throw new Error('Invalid email format.');
-    }
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters long.');
-    }
-  };
+  
 
   const signIn = async (email: string, password: string) => {
     try {
-      validateSignInForm(email, password);
-
-      const res = await fetch('http://localhost:3000/api/auth/login', {
+      console.log('Starting sign-in process...');
+      const response = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
-    } catch (error) {
-      throw new Error(error instanceof Error ? error.message : 'An unexpected error occurred.');
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        console.error('Login Error:', data.message);
+        throw new Error(data.message || 'Login failed.');
+      }
+  
+      console.log('Login Successful:', data);
+  
+      // Save the JWT token and user details in the Auth Context
+      localStorage.setItem('token', data.token); // Store JWT
+      setUser(data.user); // Set user data in context
+    } catch (err: any) {
+      console.error('Sign-In Error:', err.message);
+      throw err; // Re-throw to allow UI to handle errors
     }
   };
+  
 
   const signOut = () => {
     localStorage.removeItem('token');

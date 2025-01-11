@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Building2, Stethoscope, TestTube2, Store } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 type UserType = {
   id: string;
@@ -18,6 +19,7 @@ const userTypes: UserType[] = [
 ];
 
 const Login = () => {
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [selectedType, setSelectedType] = useState('');
@@ -38,64 +40,18 @@ const Login = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setError(null); // Clear previous errors
     setIsLoading(true);
-
-    // Validate user type for signup
-    if (!isLogin && !selectedType) {
-      setError('Please select a user type.');
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const url = isLogin
-        ? 'http://localhost:3000/api/auth/login'
-        : 'http://localhost:3000/api/auth/register';
-
-      // Prepare the payload based on whether it's a login or registration
-      const payload = isLogin
-        ? {
-            email: formData.email,
-            password: formData.password,
-          }
-        : {
-            fullName: formData.name,
-            email: formData.email,
-            password: formData.password,
-            userType: selectedType,
-            ...(formData.specialization && { specialization: formData.specialization }),
-            ...(formData.license && { license: formData.license }),
-            ...(formData.address && { address: formData.address }),
-          };
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-
-      // Show success popup
-      setPopup({ message: isLogin ? 'Login successful!' : 'Registration successful!', isVisible: true });
-
-      // Debugging: Log the response data
-      console.log('Response Data:', data);
-
-      // Navigate to the appropriate dashboard after a short delay
-      setTimeout(() => {
-        const userType = userTypes.find((type) => type.id === data.user?.userType || selectedType);
-        navigate(userType ? userType.dashboard : '/dashboard/patient');
-      }, 2000);
+      await signIn(formData.email, formData.password); // Use the AuthContext signIn function
+      navigate('/dashboard/patient'); // Redirect to the patient dashboard (customize per userType)
     } catch (err: any) {
-      setPopup({ message: err.message || 'An unexpected error occurred.', isVisible: true });
-      console.error('Error:', err);
+      setError(err.message || 'An error occurred.');
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   const closePopup = () => {
     setPopup({ message: '', isVisible: false });
