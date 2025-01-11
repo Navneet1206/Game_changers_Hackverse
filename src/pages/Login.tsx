@@ -81,17 +81,17 @@ const Login = () => {
       // Show success popup
       setPopup({ message: isLogin ? 'Login successful!' : 'Registration successful!', isVisible: true });
 
+      // Debugging: Log the response data
+      console.log('Response Data:', data);
+
       // Navigate to the appropriate dashboard after a short delay
       setTimeout(() => {
         const userType = userTypes.find((type) => type.id === data.user?.userType || selectedType);
-        if (userType) {
-          navigate(userType.dashboard);
-        } else {
-          navigate('/dashboard/patient');
-        }
+        navigate(userType ? userType.dashboard : '/dashboard/patient');
       }, 2000);
     } catch (err: any) {
       setPopup({ message: err.message || 'An unexpected error occurred.', isVisible: true });
+      console.error('Error:', err);
     } finally {
       setIsLoading(false);
     }

@@ -26,7 +26,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       fetch('http://localhost:3000/api/protected', {
         headers: { Authorization: `Bearer ${token}` },
       })
-        .then((res) => res.json())
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error('Token invalid or expired.');
+        })
         .then((data) => setUser(data.user))
         .catch(() => localStorage.removeItem('token'))
         .finally(() => setLoading(false));
@@ -35,17 +38,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const res = await fetch('http://localhost:3000/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+  const validateSignInForm = (email: string, password: string) => {
+    if (!email || !password) {
+      throw new Error('Email and password are required.');
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error('Invalid email format.');
+    }
+    if (password.length < 6) {
+      throw new Error('Password must be at least 6 characters long.');
+    }
+  };
 
-    localStorage.setItem('token', data.token);
-    setUser(data.user);
+  const signIn = async (email: string, password: string) => {
+    try {
+      validateSignInForm(email, password);
+
+      const res = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'An unexpected error occurred.');
+    }
   };
 
   const signOut = () => {
