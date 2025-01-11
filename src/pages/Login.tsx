@@ -29,17 +29,56 @@ const Login = () => {
     license: '',
     address: '',
   });
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const userType = userTypes.find(type => type.id === selectedType);
-    if (userType) {
-      navigate(userType.dashboard);
-    } else if (isLogin) {
-      // Default to patient dashboard if no type selected during login
-      navigate('/dashboard/patient');
+    setError(null);
+  
+    // Validate user type for signup
+    if (!isLogin && !selectedType) {
+      setError('Please select a user type.');
+      return;
+    }
+  
+    try {
+      const url = isLogin
+        ? 'http://localhost:3000/api/auth/login'
+        : 'http://localhost:3000/api/auth/register';
+  
+      // Remove empty fields from the payload
+      const payload = {
+        fullName: formData.name,
+        email: formData.email,
+        password: formData.password,
+        userType: selectedType,
+        ...(formData.specialization && { specialization: formData.specialization }),
+        ...(formData.license && { license: formData.license }),
+        ...(formData.address && { address: formData.address }),
+      };
+  
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+  
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+  
+      // Navigate to the appropriate dashboard
+      const userType = userTypes.find((type) => type.id === data.user?.userType || selectedType);
+      if (userType) {
+        navigate(userType.dashboard);
+      } else {
+        navigate('/dashboard/patient');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
     }
   };
+  
+  
 
   return (
     <div className="pt-20 min-h-screen bg-gray-50 flex items-center justify-center">
@@ -50,6 +89,12 @@ const Login = () => {
               {isLogin ? 'Sign in to your account' : 'Create a new account'}
             </h2>
           </div>
+
+          {error && (
+            <div className="mt-4 text-red-500 text-center">
+              {error}
+            </div>
+          )}
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {!isLogin && (
@@ -85,7 +130,7 @@ const Login = () => {
                       required
                       className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     />
                   </div>
                 </div>
@@ -103,7 +148,7 @@ const Login = () => {
                         required
                         className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         value={formData.specialization}
-                        onChange={(e) => setFormData({...formData, specialization: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
                       />
                     </div>
                   </div>
@@ -122,7 +167,7 @@ const Login = () => {
                         required
                         className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         value={formData.license}
-                        onChange={(e) => setFormData({...formData, license: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, license: e.target.value })}
                       />
                     </div>
                   </div>
@@ -141,7 +186,7 @@ const Login = () => {
                         required
                         className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         value={formData.address}
-                        onChange={(e) => setFormData({...formData, address: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       />
                     </div>
                   </div>
@@ -162,7 +207,7 @@ const Login = () => {
                   required
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
             </div>
@@ -180,7 +225,7 @@ const Login = () => {
                   required
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
               </div>
             </div>
