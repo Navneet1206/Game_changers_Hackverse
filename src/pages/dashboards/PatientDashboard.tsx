@@ -1,22 +1,50 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, Pill, FileText, Activity, User, Clock } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+
+interface Appointment {
+  id: string;
+  doctor: string;
+  specialty: string;
+  date: string;
+  time: string;
+}
+
+interface Medication {
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  remaining: number;
+}
 
 const PatientDashboard = () => {
-  const upcomingAppointments = [
-    { id: 1, doctor: 'Dr. Sarah Wilson', specialty: 'Cardiologist', date: '2024-03-15', time: '10:00 AM' },
-    { id: 2, doctor: 'Dr. Michael Brown', specialty: 'Dentist', date: '2024-03-20', time: '02:30 PM' },
-  ];
+  const { user } = useAuth();
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[] | null>(null);
+  const [medications, setMedications] = useState<Medication[] | null>(null);
+  const [recentReports, setRecentReports] = useState<number | null>(null);
 
-  const medications = [
-    { id: 1, name: 'Amoxicillin', dosage: '500mg', frequency: 'Twice daily', remaining: 5 },
-    { id: 2, name: 'Ibuprofen', dosage: '400mg', frequency: 'As needed', remaining: 10 },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/patient/${user?.id}/dashboard`);
+        const data = await response.json();
+        setUpcomingAppointments(data.upcomingAppointments);
+        setMedications(data.medications);
+        setRecentReports(data.recentReports);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchData();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back, John!</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user?.fullName}!</h1>
           <p className="text-gray-600">Here's an overview of your health status</p>
         </div>
 
@@ -25,8 +53,12 @@ const PatientDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Next Appointment</p>
-                <p className="mt-1 text-xl font-semibold">Mar 15, 10:00 AM</p>
-                <p className="text-sm text-gray-500">Dr. Sarah Wilson</p>
+                <p className="mt-1 text-xl font-semibold">
+                  {upcomingAppointments ? upcomingAppointments[0]?.date : 'Loading...'}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {upcomingAppointments ? upcomingAppointments[0]?.doctor : 'Loading...'}
+                </p>
               </div>
               <Calendar className="h-8 w-8 text-blue-500" />
             </div>
@@ -36,7 +68,9 @@ const PatientDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Active Medications</p>
-                <p className="mt-1 text-xl font-semibold">2 Prescriptions</p>
+                <p className="mt-1 text-xl font-semibold">
+                  {medications ? `${medications.length} Prescriptions` : 'Loading...'}
+                </p>
                 <p className="text-sm text-gray-500">Next refill in 5 days</p>
               </div>
               <Pill className="h-8 w-8 text-green-500" />
@@ -47,7 +81,9 @@ const PatientDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Recent Reports</p>
-                <p className="mt-1 text-xl font-semibold">3 New Results</p>
+                <p className="mt-1 text-xl font-semibold">
+                  {recentReports ? `${recentReports} New Results` : 'Loading...'}
+                </p>
                 <p className="text-sm text-gray-500">Updated 2 days ago</p>
               </div>
               <FileText className="h-8 w-8 text-purple-500" />
@@ -60,18 +96,22 @@ const PatientDashboard = () => {
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-900">Upcoming Appointments</h2>
               <div className="mt-4 space-y-4">
-                {upcomingAppointments.map((appointment) => (
-                  <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{appointment.doctor}</p>
-                      <p className="text-sm text-gray-500">{appointment.specialty}</p>
+                {upcomingAppointments ? (
+                  upcomingAppointments.map((appointment) => (
+                    <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">{appointment.doctor}</p>
+                        <p className="text-sm text-gray-500">{appointment.specialty}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">{appointment.date}</p>
+                        <p className="text-sm text-gray-500">{appointment.time}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">{appointment.date}</p>
-                      <p className="text-sm text-gray-500">{appointment.time}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p>Loading appointments...</p>
+                )}
                 <button className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
                   Schedule New Appointment
                 </button>
@@ -83,18 +123,22 @@ const PatientDashboard = () => {
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-900">Current Medications</h2>
               <div className="mt-4 space-y-4">
-                {medications.map((medication) => (
-                  <div key={medication.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{medication.name}</p>
-                      <p className="text-sm text-gray-500">{medication.dosage} - {medication.frequency}</p>
+                {medications ? (
+                  medications.map((medication) => (
+                    <div key={medication.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">{medication.name}</p>
+                        <p className="text-sm text-gray-500">{medication.dosage} - {medication.frequency}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">{medication.remaining} days remaining</p>
+                        <button className="mt-1 text-sm text-blue-600 hover:text-blue-500">Refill Request</button>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">{medication.remaining} days remaining</p>
-                      <button className="mt-1 text-sm text-blue-600 hover:text-blue-500">Refill Request</button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p>Loading medications...</p>
+                )}
               </div>
             </div>
           </div>

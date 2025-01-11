@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
   companyName: { type: String },
   contactPerson: { type: String },
   address: { type: String },
-  phone: { type: String }, 
+  phone: { type: String },
   specialization: { type: String },
   license: { type: String },
 });
@@ -47,8 +47,36 @@ const appointmentSchema = new mongoose.Schema({
   status: { type: String, default: 'Scheduled' },
 });
 
+const reportSchema = new mongoose.Schema({
+  reportId: { type: String, required: true, unique: true },
+  patientEmail: { type: String, required: true },
+  doctorEmail: { type: String, required: true },
+  testType: { type: String, required: true },
+  result: { type: String, required: true },
+  status: { type: String, default: 'Pending' },
+});
+
+const medicationSchema = new mongoose.Schema({
+  medicationId: { type: String, required: true, unique: true },
+  patientEmail: { type: String, required: true },
+  name: { type: String, required: true },
+  dosage: { type: String, required: true },
+  frequency: { type: String, required: true },
+  remaining: { type: Number, required: true },
+});
+
+const contactSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  message: { type: String, required: true },
+  submittedAt: { type: Date, default: Date.now },
+});
+
 const User = mongoose.model('User', userSchema);
 const Appointment = mongoose.model('Appointment', appointmentSchema);
+const Report = mongoose.model('Report', reportSchema);
+const Medication = mongoose.model('Medication', medicationSchema);
+const Contact = mongoose.model('Contact', contactSchema);
 
 // Middleware to Verify JWT
 const verifyToken = (req, res, next) => {
@@ -166,6 +194,126 @@ app.get('/api/auth/validate', verifyToken, async (req, res) => {
     res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
+
+// Dashboard Routes
+// Doctor Dashboard
+app.get('/api/doctor/:id/dashboard', verifyToken, async (req, res) => {
+  try {
+    const doctorId = req.params.id;
+    const appointments = await Appointment.find({ doctorEmail: doctorId });
+    const patientCount = await Appointment.distinct('patientEmail', { doctorEmail: doctorId }).countDocuments();
+    const pendingReports = await Report.countDocuments({ doctorEmail: doctorId, status: 'Pending' });
+    const averageWaitTime = 12; // Placeholder for actual calculation
+
+    res.json({
+      appointments,
+      patientCount,
+      pendingReports,
+      averageWaitTime,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching doctor dashboard data', error: error.message });
+  }
+});
+
+// Hospital Dashboard
+app.get('/api/hospital/:id/dashboard', verifyToken, async (req, res) => {
+  try {
+    const hospitalId = req.params.id;
+    const totalPatients = await Appointment.distinct('patientEmail', { hospitalId }).countDocuments();
+    const emergencyCases = await Appointment.countDocuments({ hospitalId, status: 'Emergency' });
+    const availableBeds = 42; // Placeholder for actual calculation
+    const staffOnDuty = await User.countDocuments({ userType: 'staff', hospitalId });
+
+    res.json({
+      totalPatients,
+      emergencyCases,
+      availableBeds,
+      staffOnDuty,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching hospital dashboard data', error: error.message });
+  }
+});
+
+// Lab Dashboard
+app.get('/api/lab/:id/dashboard', verifyToken, async (req, res) => {
+  try {
+    const labId = req.params.id;
+    const pendingTests = await Report.countDocuments({ labId, status: 'Pending' });
+    const reportsReady = await Report.countDocuments({ labId, status: 'Completed' });
+    const averageProcessingTime = 45; // Placeholder for actual calculation
+    const todaysPatients = await Appointment.distinct('patientEmail', { labId }).countDocuments();
+
+    res.json({
+      pendingTests,
+      reportsReady,
+      averageProcessingTime,
+      todaysPatients,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching lab dashboard data', error: error.message });
+  }
+});
+
+// Patient Dashboard
+app.get('/api/patient/:id/dashboard', verifyToken, async (req, res) => {
+  try {
+    const patientId = req.params.id;
+    const upcomingAppointments = await Appointment.find({ patientEmail: patientId, status: 'Scheduled' });
+    const medications = await Medication.find({ patientEmail: patientId });
+    const recentReports = await Report.countDocuments({ patientEmail: patientId });
+
+    res.json({
+      upcomingAppointments,
+      medications,
+      recentReports,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching patient dashboard data', error: error.message });
+  }
+});
+
+// Store Dashboard
+app.get('/api/store/:id/dashboard', verifyToken, async (req, res) => {
+  try {
+    const storeId = req.params.id;
+    const totalProducts = 1234; // Placeholder for actual calculation
+    const todaysOrders = 28; // Placeholder for actual calculation
+    const revenueToday = 1459; // Placeholder for actual calculation
+    const lowStockItems = await Medication.find({ remaining: { $lt: 10 } }); // Example for low stock
+
+    res.json({
+      totalProducts,
+      todaysOrders,
+      revenueToday,
+      lowStockItems,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching store dashboard data', error: error.message });
+  }
+});
+
+//Contact Route
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+
+    // Validation (simple example)
+    if (!name || !email || !message) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const newMessage = new Contact({ name, email, message });
+    await newMessage.save();
+
+    res.status(201).json({ message: 'Contact message submitted successfully' });
+  } catch (error) {
+    console.error('Error saving contact message:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 
 // Start Server
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

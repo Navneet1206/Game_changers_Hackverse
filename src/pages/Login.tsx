@@ -44,14 +44,15 @@ const Login = () => {
     setIsLoading(true);
     try {
       await signIn(formData.email, formData.password);
-      navigate('/dashboard/patient');
+      alert(`Logged in successfully ${UserType.id}`);
+      navigate(`/dashboard/${selectedType}`);
     } catch (err: any) {
       setError(err.message || 'An error occurred.');
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);

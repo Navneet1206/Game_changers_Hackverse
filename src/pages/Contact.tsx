@@ -13,11 +13,39 @@ const Contact = () => {
     email: '',
     message: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log(formData);
+    setIsLoading(true);
+    setShowPopup(false);
+
+    try {
+      const response = await fetch('http://localhost:3000/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
+
+      setPopupMessage('Your message has been sent successfully!');
+      setIsSuccess(true);
+      setFormData({ name: '', email: '', message: '' }); // Reset form
+    } catch (error) {
+      setPopupMessage('Failed to send message. Please try again.');
+      setIsSuccess(false);
+    } finally {
+      setIsLoading(false);
+      setShowPopup(true);
+      setTimeout(() => setShowPopup(false), 3000); // Hide popup after 3 seconds
+    }
   };
 
   return (
@@ -86,14 +114,27 @@ const Contact = () => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex justify-center items-center"
+                disabled={isLoading}
               >
-                Send Message
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                ) : (
+                  'Send Message'
+                )}
               </button>
             </form>
           </div>
         </div>
       </div>
+
+      {showPopup && (
+        <div className="fixed bottom-4 right-4">
+          <div className={`p-4 rounded-lg shadow-lg ${isSuccess ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+            {popupMessage}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
