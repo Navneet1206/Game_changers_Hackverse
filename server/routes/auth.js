@@ -1,7 +1,12 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import express from 'express';
+import Appointment from '../models/Appointment.js';
+import Receipt from '../models/Receipt.js';
+import { auth, authorize } from '../middleware/auth.js'; // Correct path with .js extension
+
+const router = express.Router();
 
 export const auth = async (req, res, next) => {
+  
   try {
     const token = req.cookies.token;
     if (!token) {

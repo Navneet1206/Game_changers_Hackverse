@@ -4,6 +4,8 @@ import Receipt from '../models/Receipt.js';
 import { auth, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
+import path from 'path';
+console.log(path.resolve('../middleware/auth.js'));
 
 // Create a new appointment
 router.post('/', auth, authorize('patient'), async (req, res) => {
