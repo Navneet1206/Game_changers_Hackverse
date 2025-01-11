@@ -20,7 +20,11 @@ const appointmentSchema = new mongoose.Schema({
     enum: ['scheduled', 'completed', 'cancelled'],
     default: 'scheduled'
   },
-  notes: String
+  notes: String,
+  receipt: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Receipt'
+  }
 }, {
   timestamps: true
 });
