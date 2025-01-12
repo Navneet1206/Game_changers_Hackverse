@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Search, MapPin, Star, Phone, Clock, Stethoscope } from 'lucide-react';
 import { motion } from 'framer-motion';
-
+import BookAppointmentPopup from '../components/BookAppointmentPopup';
 interface Hospital {
   id: number;
   name: string;
@@ -84,6 +84,7 @@ const mockHospitals: Hospital[] = [
 const Hospitals = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedService, setSelectedService] = useState('');
+  const [showAppointmentPopup, setShowAppointmentPopup] = useState(false); // State for popup visibility
 
   const filteredHospitals = mockHospitals.filter(hospital =>
     (hospital.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,6 +120,14 @@ const Hospitals = () => {
   const allScreeningServices = Array.from(
     new Set(mockHospitals.flatMap(hospital => hospital.screeningServices))
   ).sort();
+
+  const handleBookAppointment = () => {
+    setShowAppointmentPopup(true); // Open the popup
+  };
+
+  const handleClosePopup = () => {
+    setShowAppointmentPopup(false); // Close the popup
+  };
 
   return (
     <div className="pt-20 min-h-screen bg-gradient-to-b from-blue-50 via-blue-100 to-blue-200">
@@ -237,6 +246,7 @@ const Hospitals = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="mt-6 w-full bg-blue-700 text-white px-4 py-2 rounded-md hover:bg-blue-800 transition-colors"
+                  onClick={handleBookAppointment} // Open the popup on click
                 >
                   Book Appointment
                 </motion.button>
@@ -244,6 +254,11 @@ const Hospitals = () => {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Render the BookAppointmentPopup conditionally */}
+        {showAppointmentPopup && (
+          <BookAppointmentPopup onClose={handleClosePopup} />
+        )}
       </div>
     </div>
   );

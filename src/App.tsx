@@ -122,7 +122,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+          
           {/* Catch-All Route for 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
