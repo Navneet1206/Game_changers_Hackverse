@@ -95,7 +95,7 @@ const Login = () => {
   };
 
   return (
-    <div className="pt-20 min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="pt-20 min-h-screen bg-gradient-to-br from-blue-900 via-teal-700 to-blue-500 flex items-center justify-center">
       <div className="max-w-md w-full mx-4">
         <div className="bg-white py-8 px-4 shadow-lg rounded-lg sm:px-10">
           <div className="sm:mx-auto sm:w-full sm:max-w-md">

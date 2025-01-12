@@ -3,7 +3,7 @@ import Features from '../components/Features';
 
 function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-teal-700 to-blue-500 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-teal-700 to-blue-500 text-white p-14">
       <div className="relative">
         <div className="max-w-7xl mx-auto">
           <div className="relative z-10 pt-24 pb-8 sm:pb-16 md:pb-20 lg:w-full lg:pb-28 xl:pb-32">
