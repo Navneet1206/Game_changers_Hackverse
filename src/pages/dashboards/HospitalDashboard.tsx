@@ -16,6 +16,24 @@ interface Alert {
   time: string;
 }
 
+const mockData = {
+  totalPatients: 120,
+  emergencyCases: 15,
+  availableBeds: 45,
+  staffOnDuty: 32,
+  departments: [
+    { name: 'Cardiology', occupied: 25, total: 30, waitTime: '15 mins' },
+    { name: 'Orthopedics', occupied: 18, total: 20, waitTime: '10 mins' },
+    { name: 'Pediatrics', occupied: 12, total: 20, waitTime: '5 mins' },
+    { name: 'Neurology', occupied: 10, total: 15, waitTime: '20 mins' },
+  ],
+  recentAlerts: [
+    { id: '1', type: 'Emergency', message: 'Patient in critical condition', time: '10:30 AM' },
+    { id: '2', type: 'Maintenance', message: 'MRI machine under maintenance', time: '9:45 AM' },
+    { id: '3', type: 'Staff', message: 'Nurse shift change', time: '8:00 AM' },
+  ],
+};
+
 const HospitalDashboard = () => {
   const { user } = useAuth();
   const [totalPatients, setTotalPatients] = useState<number | null>(null);
@@ -28,8 +46,16 @@ const HospitalDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/api/hospital/${user?.id}/dashboard`);
-        const data = await response.json();
+        // Simulate API call delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Use mock data for development
+        const data = mockData;
+
+        // Uncomment the following lines to use real API data
+        // const response = await fetch(`/api/hospital/${user?.id}/dashboard`);
+        // const data = await response.json();
+
         setTotalPatients(data.totalPatients);
         setEmergencyCases(data.emergencyCases);
         setAvailableBeds(data.availableBeds);
