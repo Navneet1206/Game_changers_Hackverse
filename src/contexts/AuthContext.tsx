@@ -5,6 +5,7 @@ interface User {
   email: string;
   userType: string;
   fullName: string;
+  isEkycVerified: boolean; // Add this field
 }
 
 interface AuthContextType {
@@ -12,6 +13,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
+  verifyEkyc: () => void; // Add this method
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +22,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const verifyEkyc = () => {
+    if (user) {
+      setUser({ ...user, isEkycVerified: true });
+    }
+  };
   useEffect(() => {
     console.log('AuthProvider initialized');
     const token = localStorage.getItem('token');
@@ -81,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut,  verifyEkyc  }}>
       {!loading && children}
     </AuthContext.Provider>
   );

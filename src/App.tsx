@@ -14,7 +14,7 @@ import LabDashboard from './pages/dashboards/LabDashboard';
 import StoreDashboard from './pages/dashboards/StoreDashboard';
 import NotFound from './pages/NotFound'; // Import a new NotFound component
 import { useAuth } from './contexts/AuthContext';
-
+import Footer from './components/Footer';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -32,7 +32,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100 mb-64">
         <Navbar />
         <Routes>
           {/* Public Routes */}
@@ -124,6 +124,7 @@ function App() {
           {/* Catch-All Route for 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <Footer />
       </div>
     </Router>
   );
