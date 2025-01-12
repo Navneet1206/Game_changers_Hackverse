@@ -53,6 +53,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   fullName: { type: String, required: true },
   userType: { type: String, required: true },
+  isEkycVerified: { type: Boolean, default: false }, // Add this field
   companyName: { type: String },
   contactPerson: { type: String },
   address: { type: String },
@@ -106,6 +107,9 @@ const mediclaimSchema = new mongoose.Schema({
   doctorReceipt: { type: String }, // Store file path or URL
   submittedAt: { type: Date, default: Date.now },
 });
+
+
+
 
 const Mediclaim = mongoose.model('Mediclaim', mediclaimSchema);
 
@@ -210,6 +214,7 @@ app.post('/api/auth/login', async (req, res) => {
         email: user.email,
         fullName: user.fullName,
         userType: user.userType,
+        isEkycVerified: user.isEkycVerified, 
       },
     });
 

@@ -39,19 +39,22 @@ const Login = () => {
   });
 
   const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-    try {
-      await signIn(formData.email, formData.password);
-      alert(`Logged in successfully ${UserType.id}`);
+  e.preventDefault();
+  setError(null);
+  setIsLoading(true);
+  try {
+    await signIn(formData.email, formData.password);
+    if (!user?.isEkycVerified) {
+      navigate('/ekyc');
+    } else {
       navigate(`/dashboard/${selectedType}`);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred.');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (err: any) {
+    setError(err.message || 'An error occurred.');
+  } finally {
+    setIsLoading(false);
+  }
+};
   
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();

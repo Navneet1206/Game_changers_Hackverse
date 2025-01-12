@@ -15,6 +15,7 @@ import StoreDashboard from './pages/dashboards/StoreDashboard';
 import NotFound from './pages/NotFound'; // Import a new NotFound component
 import { useAuth } from './contexts/AuthContext';
 import Footer from './components/Footer';
+import Ekyc from './pages/Ekyc';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -50,6 +51,7 @@ function App() {
             }
           />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+          <Route path="/ekyc" element={<Ekyc />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
 

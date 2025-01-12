@@ -40,7 +40,12 @@ const HospitalDashboard = () => {
         console.error('Error fetching dashboard data:', error);
       }
     };
-
+    const navigate = useNavigate();
+    useEffect(() => {
+      if (user && !user.isEkycVerified) {
+        navigate('/ekyc');
+      }
+    }, [user, navigate]);
     fetchData();
   }, [user]);
 
