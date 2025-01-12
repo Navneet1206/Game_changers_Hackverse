@@ -6,6 +6,28 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path'); // Add this line
+const multer = require('multer'); // Add multer for file uploads
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './uploads/'); // Save files in the 'uploads' directory
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
+
+// Ensure the uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 const app = express();
 const PORT = 3000;
@@ -23,6 +45,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/healthhub', {
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => console.log('Connected to MongoDB'));
+
 
 // Mongoose Schemas
 const userSchema = new mongoose.Schema({
@@ -71,6 +94,20 @@ const contactSchema = new mongoose.Schema({
   message: { type: String, required: true },
   submittedAt: { type: Date, default: Date.now },
 });
+
+const mediclaimSchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  employeeId: { type: String, required: true },
+  company: { type: String, required: true },
+  email: { type: String, required: true },
+  phoneNumber: { type: String, required: true },
+  description: { type: String, required: true },
+  healthHubDocument: { type: String }, // Store file path or URL
+  doctorReceipt: { type: String }, // Store file path or URL
+  submittedAt: { type: Date, default: Date.now },
+});
+
+const Mediclaim = mongoose.model('Mediclaim', mediclaimSchema);
 
 const User = mongoose.model('User', userSchema);
 const Appointment = mongoose.model('Appointment', appointmentSchema);
@@ -314,6 +351,182 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
+
+const helveticaBold = 'Helvetica-Bold';
+const helvetica = 'Helvetica';
+
+app.post('/api/submit-claim', upload.fields([
+  { name: 'healthHubDocument', maxCount: 1 },
+  { name: 'doctorReceipt', maxCount: 1 },
+]), async (req, res) => {
+  try {
+    const { fullName, employeeId, company, email, phoneNumber, description } = req.body;
+
+    const healthHubDocument = req.files['healthHubDocument']?.[0]?.path || null;
+    const doctorReceipt = req.files['doctorReceipt']?.[0]?.path || null;
+
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="MediClaim_Receipt.pdf"');
+    doc.pipe(res);
+
+    // Header Section
+    doc.font(helveticaBold)
+      .fontSize(24)
+      .fillColor('#333')
+      .text('MediClaim Receipt', { align: 'center' })
+      .moveDown(1);
+
+    doc.moveTo(50, 80).lineTo(550, 80).strokeColor('#666').lineWidth(1).stroke();
+
+    // Claim Details Section
+    doc.font(helveticaBold)
+      .fontSize(16)
+      .fillColor('#444')
+      .text('Claim Details', { underline: true })
+      .moveDown(0.5);
+
+    doc.font(helvetica)
+      .fontSize(12)
+      .fillColor('#000')
+      .text(`Name: ${fullName}`)
+      .text(`Employee ID: ${employeeId}`)
+      .text(`Company: ${company}`)
+      .text(`Email: ${email}`)
+      .text(`Phone: ${phoneNumber}`)
+      .moveDown(1);
+
+    // Description Section
+    doc.font(helveticaBold)
+      .fontSize(16)
+      .fillColor('#444')
+      .text('Health Problem Description', { underline: true })
+      .moveDown(0.5);
+
+    doc.font(helvetica)
+      .fontSize(12)
+      .fillColor('#000')
+      .text(description, { width: 500, align: 'justify' })
+      .moveDown(1.5);
+
+    // Attached Documents Section
+    doc.font(helveticaBold)
+      .fontSize(16)
+      .fillColor('#444')
+      .text('Attached Documents', { underline: true })
+      .moveDown(0.5);
+
+    const addImage = (doc, title, imagePath) => {
+      if (imagePath) {
+        doc.font(helveticaBold)
+          .fontSize(12)
+          .fillColor('#000')
+          .text(`${title}:`, { continued: false })
+          .moveDown(0.3);
+
+        try {
+          doc.image(imagePath, {
+            fit: [450, 300], // Ensure the image fits within these bounds
+            align: 'center',
+            valign: 'top',
+          });
+          doc.moveDown(1);
+        } catch (error) {
+          console.error(`Error loading ${title}:`, error);
+          doc.font(helvetica)
+            .fontSize(12)
+            .fillColor('#FF0000')
+            .text('Error loading image. Skipping this section.', { continued: false })
+            .moveDown(1);
+        }
+      } else {
+        doc.font(helvetica)
+          .fontSize(12)
+          .fillColor('#555')
+          .text(`${title} not provided.`, { continued: false })
+          .moveDown(1);
+      }
+    };
+
+    // Add healthHubDocument
+    addImage(doc, 'Health Hub Document', healthHubDocument);
+
+    // Add doctorReceipt
+    addImage(doc, 'Doctor Receipt', doctorReceipt);
+
+    // Footer Section
+    doc.moveTo(50, doc.page.height - 50).lineTo(550, doc.page.height - 50).strokeColor('#666').lineWidth(1).stroke();
+
+    doc.font(helvetica)
+      .fontSize(10)
+      .fillColor('#555')
+      .text('Thank you for using HealthHub MediClaim Services!', { align: 'center' })
+      .text(`Generated on: ${new Date().toLocaleString()}`, { align: 'center' });
+
+    doc.end();
+  } catch (error) {
+    console.error('Error generating receipt:', error);
+    res.status(500).json({ message: 'Error generating receipt', error: error.message });
+  }
+});
+
+
+
+app.post('/api/book-appointment', async (req, res) => {
+  const { patientName, doctorName, appointmentDate, appointmentTime, reason } = req.body;
+
+  // Save the appointment to the database
+  const newAppointment = new Appointment({
+    appointmentId: uuidv4(),
+    patientEmail: req.body.email, // Assuming email is part of the request
+    doctorEmail: req.body.doctorEmail, // Assuming doctorEmail is part of the request
+    date: appointmentDate,
+    time: appointmentTime,
+    status: 'Scheduled',
+  });
+
+  try {
+    await newAppointment.save();
+
+    // Create a PDF document
+    const doc = new PDFDocument();
+    const filePath = `./appointments/${Date.now()}_${patientName}_Appointment_Receipt.pdf`;
+
+    // Pipe the PDF to a file
+    doc.pipe(fs.createWriteStream(filePath));
+
+    // Add content to the PDF
+    doc.fontSize(25).text('Appointment Receipt', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(15).text(`Patient Name: ${patientName}`);
+    doc.text(`Doctor Name: ${doctorName}`);
+    doc.text(`Appointment Date: ${appointmentDate}`);
+    doc.text(`Appointment Time: ${appointmentTime}`);
+    doc.text(`Reason for Visit: ${reason}`);
+    doc.moveDown();
+    doc.text('Thank you for using HealthHub Appointment Services!', { align: 'center' });
+
+    // Finalize the PDF
+    doc.end();
+
+    // Wait for the PDF to be written to the file
+    doc.on('finish', () => {
+      res.download(filePath, 'Appointment_Receipt.pdf', (err) => {
+        if (err) {
+          console.error('Error sending PDF:', err);
+          res.status(500).send('Error generating PDF');
+        } else {
+          // Delete the file after sending it
+          fs.unlinkSync(filePath);
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error saving appointment:', error);
+    res.status(500).send('Error saving appointment');
+  }
+});
 
 // Start Server
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

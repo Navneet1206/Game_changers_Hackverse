@@ -15,6 +15,7 @@ import StoreDashboard from './pages/dashboards/StoreDashboard';
 import NotFound from './pages/NotFound'; // Import a new NotFound component
 import { useAuth } from './contexts/AuthContext';
 
+
 // Protected Route Component
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();

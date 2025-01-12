@@ -1,10 +1,52 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, FileCheck, Building, Users, UploadCloud } from 'lucide-react';
+import { ShieldCheck, FileCheck, Building, Users, UploadCloud, CheckCircle, XCircle } from 'lucide-react';
 import axios from 'axios';
+
+// Validation function
+const validateForm = (formData) => {
+  const errors = [];
+
+  // Required fields
+  const requiredFields = ['fullName', 'employeeId', 'company', 'email', 'phoneNumber', 'description'];
+  requiredFields.forEach(field => {
+    if (!formData.get(field)) {
+      errors.push(`${field.charAt(0).toUpperCase() + field.slice(1)} is required`);
+    }
+  });
+
+  // Email validation
+  const email = formData.get('email');
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.push('Invalid email format');
+  }
+
+  // Phone validation
+  const phone = formData.get('phoneNumber');
+  if (phone && !/^\d{10}$/.test(phone.replace(/[-\s]/g, ''))) {
+    errors.push('Phone number must be 10 digits');
+  }
+
+  // File validation
+  const healthHubDoc = formData.get('healthHubDocument');
+  const doctorReceipt = formData.get('doctorReceipt');
+
+  if (healthHubDoc && !['image/jpeg', 'image/png', 'application/pdf'].includes(healthHubDoc.type)) {
+    errors.push('Health Hub Document must be JPG, PNG, or PDF');
+  }
+
+  if (doctorReceipt && !['image/jpeg', 'image/png', 'application/pdf'].includes(doctorReceipt.type)) {
+    errors.push('Doctor Receipt must be JPG, PNG, or PDF');
+  }
+
+  return errors;
+};
 
 const MediClaim = () => {
   const [showForm, setShowForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [popup, setPopup] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -23,22 +65,48 @@ const MediClaim = () => {
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-    const formData = new FormData(event.target);
-    const receiptData = Object.fromEntries(formData.entries());
-
+    setIsLoading(true);
+    setPopup(null);
+    setValidationErrors([]);
+  
+    const formData = new FormData(event.currentTarget);
+  
+    // Validate form
+    const errors = validateForm(formData);
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setIsLoading(false);
+      return;
+    }
+  
     try {
       const response = await axios.post(
         'http://localhost:3000/api/submit-claim',
-        receiptData,
-        { responseType: 'blob' }
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          responseType: 'blob',
+        }
       );
+  
+      // Trigger PDF download
       const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = 'MediClaim_Receipt.pdf';
       link.click();
+  
+      // Show success popup
+      setPopup({ type: 'success', message: 'Claim submitted successfully! Receipt downloaded.' });
+  
+      // Reset form
+      event.currentTarget.reset();
+      setShowForm(false);
     } catch (error) {
       console.error('Error submitting form:', error);
+      setPopup({ type: 'error', message: 'Failed to submit claim. Please try again.' });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -122,7 +190,7 @@ const MediClaim = () => {
                     type="text"
                     name="fullName"
                     required
-                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg"
+                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg text-black"
                   />
                 </div>
                 <div>
@@ -133,7 +201,7 @@ const MediClaim = () => {
                     type="text"
                     name="employeeId"
                     required
-                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg"
+                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg text-black"
                   />
                 </div>
                 <div>
@@ -143,7 +211,7 @@ const MediClaim = () => {
                   <select
                     name="company"
                     required
-                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg"
+                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg text-black"
                   >
                     <option value="Tata Consultancy Services">
                       Tata Consultancy Services
@@ -162,7 +230,7 @@ const MediClaim = () => {
                     type="file"
                     name="healthHubDocument"
                     required
-                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg"
+                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg text-black"
                   />
                 </div>
                 <div>
@@ -173,7 +241,7 @@ const MediClaim = () => {
                     type="file"
                     name="doctorReceipt"
                     required
-                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg"
+                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg text-black"
                   />
                 </div>
                 <div>
@@ -184,7 +252,7 @@ const MediClaim = () => {
                     type="email"
                     name="email"
                     required
-                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg"
+                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg text-black"
                   />
                 </div>
                 <div>
@@ -195,7 +263,7 @@ const MediClaim = () => {
                     type="tel"
                     name="phoneNumber"
                     required
-                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg"
+                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg text-black"
                   />
                 </div>
                 <div>
@@ -205,17 +273,68 @@ const MediClaim = () => {
                   <textarea
                     name="description"
                     required
-                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg"
+                    className="mt-2 p-3 w-full border border-gray-300 rounded-lg text-black"
                   ></textarea>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="mt-4 w-full bg-teal-800 text-white px-6 py-3 rounded-md hover:bg-teal-600 transition"
+                  className="mt-4 w-full bg-teal-800 text-white px-6 py-3 rounded-md hover:bg-teal-600 transition flex items-center justify-center"
+                  disabled={isLoading}
                 >
-                  Submit Claim
+                  {isLoading ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  ) : (
+                    'Submit Claim'
+                  )}
                 </motion.button>
               </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Validation Errors */}
+        <AnimatePresence>
+          {validationErrors.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed bottom-4 right-4 p-4 bg-red-500 rounded-lg shadow-lg max-w-md z-50"
+            >
+              <h3 className="font-bold text-white mb-2">Please fix the following errors:</h3>
+              <ul className="list-disc list-inside text-white">
+                {validationErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Success/Error Popup */}
+        <AnimatePresence>
+          {popup && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg flex items-center space-x-2 z-50 ${
+                popup.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+              }`}
+            >
+              {popup.type === 'success' ? (
+                <CheckCircle className="h-6 w-6 text-white" />
+              ) : (
+                <XCircle className="h-6 w-6 text-white" />
+              )}
+              <span className="text-white">{popup.message}</span>
+              <button
+                onClick={() => setPopup(null)}
+                className="ml-2 text-white hover:text-gray-200"
+              >
+                <XCircle className="h-4 w-4" />
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
