@@ -29,7 +29,7 @@ const mockHospitals: Hospital[] = [
     hours: "24/7",
     specialties: ["Cardiology", "Orthopedics", "Neurology", "Oncology"],
     screeningServices: ["CT Scan", "MRI", "Blood Tests", "ECG"],
-    image: "https://images.unsplash.com/photo-1584438784665-dfdb2c3f8bb3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://www.apollohospitals.com/ahmedabad/cancer-center/wp-content/uploads/2015/04/apollo-ahmedabad.jpg"
   },
   {
     id: 2,
@@ -41,7 +41,7 @@ const mockHospitals: Hospital[] = [
     hours: "24/7",
     specialties: ["General Medicine", "Surgery", "Pediatrics", "Trauma Care"],
     screeningServices: ["X-Ray", "Ultrasound", "Blood Tests", "Physical Exam"],
-    image: "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://i.ndtvimg.com/i/2015-03/aiims_650x400_51425791909.jpg?downsize=773:435"
   },
   {
     id: 3,
@@ -53,7 +53,7 @@ const mockHospitals: Hospital[] = [
     hours: "24/7",
     specialties: ["Cardiology", "Urology", "Neurology", "Orthopedics"],
     screeningServices: ["Bone Density Test", "Mammography", "ECG", "Blood Tests"],
-    image: "https://images.unsplash.com/photo-1576765607927-917f30c0a365?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://getwellgo.com/uploads/hospitals/fortis-gurgaon.jpg"
   },
   {
     id: 4,
@@ -65,7 +65,7 @@ const mockHospitals: Hospital[] = [
     hours: "24/7",
     specialties: ["Cancer Care", "Cardiac Surgery", "Pediatrics", "Gastroenterology"],
     screeningServices: ["Endoscopy", "PET Scan", "CT Scan", "MRI"],
-    image: "https://images.unsplash.com/photo-1576766562930-1168c11a3116?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://media.mymeditravel.com/711x470/uploads/property/gallery/5af27577fa6b7e04401f8ad3/5af2d3a2fa6b7e0d1662d6b2/medium.jpg"
   },
   {
     id: 5,
@@ -77,10 +77,9 @@ const mockHospitals: Hospital[] = [
     hours: "24/7",
     specialties: ["Nephrology", "Gynecology", "Oncology", "Dermatology"],
     screeningServices: ["Skin Biopsy", "Blood Tests", "CT Scan", "Physical Exam"],
-    image: "https://images.unsplash.com/photo-1576765607927-917f30c0a365?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://www.manipalhospitals.com/uploads/photo_gallery/bhubaneswar-hospital-image.webp"
   }
 ];
-
 
 const Hospitals = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -122,15 +121,15 @@ const Hospitals = () => {
   ).sort();
 
   return (
-    <div className="pt-20 min-h-screen bg-gray-50">
+    <div className="pt-20 min-h-screen bg-gradient-to-b from-blue-50 via-blue-100 to-blue-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="text-center"
         >
-          <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">Find Hospitals</h1>
-          <p className="mt-4 text-xl text-gray-600">Discover quality healthcare facilities near you</p>
+          <h1 className="text-4xl font-bold text-blue-800 sm:text-5xl">Find Hospitals</h1>
+          <p className="mt-4 text-xl text-blue-600">Discover quality healthcare facilities near you</p>
         </motion.div>
 
         <div className="mt-8 max-w-xl mx-auto space-y-4">
@@ -139,11 +138,11 @@ const Hospitals = () => {
             animate={{ x: 0, opacity: 1 }}
             className="relative"
           >
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
             <input
               type="text"
               placeholder="Search by hospital name or specialty..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -154,9 +153,9 @@ const Hospitals = () => {
             animate={{ x: 0, opacity: 1 }}
             className="relative"
           >
-            <Stethoscope className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Stethoscope className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
             <select
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               value={selectedService}
               onChange={(e) => setSelectedService(e.target.value)}
             >
@@ -178,36 +177,36 @@ const Hospitals = () => {
             <motion.div
               key={hospital.id}
               variants={itemVariants}
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"
+              whileHover={{ scale: 1.03 }}
+              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
             >
               <img src={hospital.image} alt={hospital.name} className="w-full h-48 object-cover" />
               <div className="p-6">
                 <h3 
-                  className="text-xl font-semibold text-gray-900 hover:text-blue-600 cursor-pointer"
+                  className="text-xl font-semibold text-blue-800 hover:text-blue-600 cursor-pointer"
                   onClick={() => openInGoogleMaps(hospital.coordinates)}
                 >
                   {hospital.name}
                 </h3>
                 <div className="mt-2 flex items-center">
-                  <MapPin className="h-4 w-4 text-gray-400" />
-                  <span className="ml-2 text-sm text-gray-600">{hospital.address}</span>
+                  <MapPin className="h-4 w-4 text-blue-400" />
+                  <span className="ml-2 text-sm text-blue-600">{hospital.address}</span>
                 </div>
                 <div className="mt-2 flex items-center">
                   <Star className="h-4 w-4 text-yellow-400" />
-                  <span className="ml-2 text-sm text-gray-600">{hospital.rating} / 5.0</span>
+                  <span className="ml-2 text-sm text-blue-600">{hospital.rating} / 5.0</span>
                 </div>
                 <div className="mt-2 flex items-center">
-                  <Phone className="h-4 w-4 text-gray-400" />
-                  <span className="ml-2 text-sm text-gray-600">{hospital.phone}</span>
+                  <Phone className="h-4 w-4 text-blue-400" />
+                  <span className="ml-2 text-sm text-blue-600">{hospital.phone}</span>
                 </div>
                 <div className="mt-2 flex items-center">
-                  <Clock className="h-4 w-4 text-gray-400" />
-                  <span className="ml-2 text-sm text-gray-600">{hospital.hours}</span>
+                  <Clock className="h-4 w-4 text-blue-400" />
+                  <span className="ml-2 text-sm text-blue-600">{hospital.hours}</span>
                 </div>
 
                 <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-900">Specialties:</h4>
+                  <h4 className="text-sm font-medium text-blue-800">Specialties:</h4>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {hospital.specialties.map((specialty, index) => (
                       <span
@@ -221,7 +220,7 @@ const Hospitals = () => {
                 </div>
 
                 <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-900">Screening Services:</h4>
+                  <h4 className="text-sm font-medium text-blue-800">Screening Services:</h4>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {hospital.screeningServices.map((service, index) => (
                       <span
@@ -237,7 +236,7 @@ const Hospitals = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="mt-6 w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                  className="mt-6 w-full bg-blue-700 text-white px-4 py-2 rounded-md hover:bg-blue-800 transition-colors"
                 >
                   Book Appointment
                 </motion.button>
