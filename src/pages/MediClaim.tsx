@@ -63,13 +63,16 @@ const MediClaim = () => {
     visible: { scale: 1, opacity: 1, transition: { duration: 0.3 } },
   };
 
-  const handleFormSubmit = async (event) => {
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setPopup(null);
     setValidationErrors([]);
   
-    const formData = new FormData(event.currentTarget);
+    // Capture the form element
+    const formElement = event.currentTarget;
+  
+    const formData = new FormData(formElement);
   
     // Validate form
     const errors = validateForm(formData);
@@ -99,16 +102,27 @@ const MediClaim = () => {
       // Show success popup
       setPopup({ type: 'success', message: 'Claim submitted successfully! Receipt downloaded.' });
   
-      // Reset form
-      event.currentTarget.reset();
+      // Reset the form
+      formElement.reset();
       setShowForm(false);
     } catch (error) {
       console.error('Error submitting form:', error);
+  
+      if (error.response) {
+        console.log('Server Response:', error.response.data);
+        console.log('Status:', error.response.status);
+      } else if (error.request) {
+        console.log('No response received from server:', error.request);
+      } else {
+        console.log('Error setting up the request:', error.message);
+      }
+  
       setPopup({ type: 'error', message: 'Failed to submit claim. Please try again.' });
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen p-14 bg-gradient-to-br from-blue-900 via-teal-400 to-blue-300 text-white">
