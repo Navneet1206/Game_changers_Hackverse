@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Ekyc = () => {
-  const { user } = useAuth();
+  const { user, verifyEkyc } = useAuth();
   const navigate = useNavigate();
   const [idNumber, setIdNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,6 +18,7 @@ const Ekyc = () => {
     setTimeout(() => {
       setLoading(false);
       if (idNumber.length === 12) { // Example: Indian Aadhaar number length
+        verifyEkyc(); // Update eKYC status
         navigate(`/dashboard/${user?.userType.toLowerCase()}`);
       } else {
         setError('Invalid ID number. Please enter a valid 12-digit ID.');

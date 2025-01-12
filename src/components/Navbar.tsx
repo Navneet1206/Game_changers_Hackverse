@@ -29,6 +29,15 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white shadow-lg fixed w-full z-50">
+      {user && !user.isEkycVerified && (
+        <div className="bg-yellow-100 text-yellow-800 text-center py-2">
+          Please complete your{' '}
+          <Link to="/ekyc" className="underline hover:text-yellow-900">
+            eKYC verification
+          </Link>{' '}
+          to access all features.
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -49,6 +58,11 @@ const Navbar = () => {
                 <NavLink to="/contact">Contact</NavLink>
                 <NavLink to="/hospitals">Find Hospitals</NavLink>
                 <NavLink to="/mediclaim">MediClaim</NavLink>
+                {!user.isEkycVerified && (
+                  <NavLink to="/ekyc" className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600">
+                    Complete eKYC
+                  </NavLink>
+                )}
                 <button
                   onClick={signOut}
                   className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
@@ -97,6 +111,11 @@ const Navbar = () => {
                 <NavLink to="/contact">Contact</NavLink>
                 <NavLink to="/hospitals">Find Hospitals</NavLink>
                 <NavLink to="/mediclaim">MediClaim</NavLink>
+                {!user.isEkycVerified && (
+                  <NavLink to="/ekyc" className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600">
+                    Complete eKYC
+                  </NavLink>
+                )}
                 <button
                   onClick={signOut}
                   className="w-full text-left px-3 py-2 text-gray-600 hover:text-blue-600"
