@@ -33,7 +33,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100 mb-64">
+      <div className="min-h-screen bg-gray-100">
         <Navbar />
         <Routes>
           {/* Public Routes */}
